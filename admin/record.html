@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>出入记录</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/AdminLTE.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="../plugins/angularjs/angular.min.js"></script>
+    <script src="../js/laydate.js"></script>
+    <!--	分页插件-->
+    <script src="../plugins/angularjs/pagination.js"></script>
+    <link rel="stylesheet" href="../plugins/angularjs/pagination.css">
+
+    <script>
+        var app = angular.module('yqRegister', ['pagination']);//定义模块
+        app.controller('recordController', function ($scope, $http) {
+
+            $scope.init = function () {
+
+                $http.get('http://localhost:8080/admin/check', {'withCredentials': true}).success(
+                    function (response) {
+                        if (response != null &&response !='') {
+
+                            $scope.admin =response;
+                            $scope.fgroupRecord.siteId =$scope.admin.siteId;
+                            $scope.reloadList();
+                        } else {
+                            window.location = "../login.html"
+                        }
+                    }
+                );
+
+            }
+
+
+            $scope.reloadList = function () {
+                //切换页码
+                $scope.find($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage);
+
+            }
+
+
+            //分页控件配置
+            $scope.paginationConf = {
+                currentPage: 1,
+                totalItems: 10,
+                itemsPerPage: 10,
+                perPageOptions: [10, 20, 30, 40, 50],
+                onChange: function () {
+                    console.log("paginationConf");
+                    $scope.reloadList();//重新加载
+                }
+            };
+
+            $scope.fgroupRecord={};
+
+            //分页
+            $scope.find = function (page, rows) {
+
+                if($("#endDate").val() != null &&$("#endDate").val() !=''){
+                    $scope.fgroupRecord.endDate =$("#endDate").val();
+                }
+                if($("#beginDate").val() != null &&$("#beginDate").val() !=''){
+                    $scope.fgroupRecord.beginDate =$("#beginDate").val();
+                }
+
+                console.log($scope.fgroupRecord);
+                $http.post('http://localhost:8080/record/find?pageNum=' + page + '&pageSize=' + rows,$scope.fgroupRecord).success(
+                    function (response) {
+
+                        $scope.groupRecords = response.rows;
+                        $scope.paginationConf.totalItems = response.total;//更新总记录数
+                    }
+                );
+            }
+
+            $scope.getAction = function (action) {
+                if (action ===1){
+                    return "入";
+                }else if (action ===0){
+                    return "出";
+                }
+            }
+
+
+
+
+
+
+
+
+
+        });
+
+
+    </script>
+
+    <script>
+        laydate.render({
+            elem: '#endDate'
+            ,type: 'datetime'
+            ,lang: 'en'
+            ,max: getNowFormatDate() // 这里是设置最大日期
+            ,btns: ['clear', 'confirm']
+            ,format: 'yyyy-MM-dd HH:mm:ss'
+        });
+        laydate.render({
+            elem: '#beginDate'
+            ,type: 'datetime'
+            ,lang: 'en'
+            ,min: '2020-03-20 00:00:00'
+            ,max:getNowFormatDate() // 这里是设置最大日期
+            ,btns: ['clear', 'confirm']
+            ,format: 'yyyy-MM-dd HH:mm:ss'
+        });
+
+
+        function getNowFormatDate() {
+
+            var date = new Date();
+            var seperator1 = "-";
+            var seperator2 = ":";
+            var month = date.getMonth() + 1;
+            var strDate = date.getDate();
+            if (month >= 1 && month <= 9) {
+                month = "0" + month;
+            }
+            if (strDate >= 0 && strDate <= 9) {
+                strDate = "0" + strDate;
+            }
+            var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+                + " " + date.getHours() + seperator2 + date.getMinutes()
+                + seperator2 + date.getSeconds();
+            return currentdate;
+        }
+
+    </script>
+
+
+</head>
+<body class="hold-transition skin-red sidebar-mini" ng-app="yqRegister" ng-controller="recordController" ng-init="init()" >
+<!-- .box-body -->
+<div class="box-header with-border">
+    <h3 class="box-title">出入记录</h3>
+</div>
+
+<div class="box-body">
+
+    <!-- 数据表格 -->
+    <div class="table-box">
+
+        <!--工具栏-->
+        <div class="pull-left">
+            <div class="form-group form-inline">
+                <div class="btn-group">
+
+                    <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i
+                            class="fa fa-refresh"></i> 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="box-tools pull-right">
+            <div class="has-feedback">
+              姓名:<input ng-model="fgroupRecord.username"> <span ng-if="admin.grade==0">防疫站:<input ng-model="fgroupRecord.name"></span>
+              开始日期:<input  id="beginDate"> 结束日期:<input  type="text" id="endDate">
+                <button class="btn btn-default" ng-click="reloadList()">查询</button>
+            </div>
+        </div>
+        <!--工具栏/-->
+
+        <!--数据列表-->
+        <table id="dataList" class="table table-bordered table-striped table-hover dataTable">
+            <thead>
+            <tr>
+                <th class="" style="padding-right:0px">
+                    <input id="selall" type="checkbox" class="icheckbox_square-blue">
+                </th>
+                <th class="sorting_asc">姓名</th>
+                <th class="sorting">手机</th>
+                <th class="sorting">方向</th>
+                <th class="sorting">温度</th>
+                <th class="sorting">时间</th>
+                <th class="text-center">防疫站</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="groupRecord in groupRecords">
+                <td><input type="checkbox" ></td>
+                <td>{{groupRecord.username}}</td>
+                <td>{{groupRecord.phone}}</td>
+                <td>{{getAction(groupRecord.action)}}</td>
+                <td>{{groupRecord.temperature}}</td>
+                <td>{{groupRecord.date}}</td>
+                <td>{{groupRecord.name}}</td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <!--数据列表/-->
+        <tm-pagination conf="paginationConf"></tm-pagination>
+
+    </div>
+    <!-- 数据表格 /-->
+
+
+</div>
+<!-- /.box-body -->
+
+
+
+</body>
+</html>

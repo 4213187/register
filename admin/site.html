@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>防疫站管理</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/AdminLTE.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+    <script src="../plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+
+    <script src="../plugins/angularjs/angular.min.js"></script>
+
+    <!--	分页插件-->
+    <script src="../plugins/angularjs/pagination.js"></script>
+    <link rel="stylesheet" href="../plugins/angularjs/pagination.css">
+
+    <script>
+        var app = angular.module('yqRegister', ['pagination']);//定义模块
+        app.controller('siteController', function ($scope, $http) {
+
+
+            $scope.reloadList = function () {
+                //切换页码
+                $scope.find($scope.paginationConf.currentPage, $scope.paginationConf.itemsPerPage);
+
+            }
+
+
+            //分页控件配置
+            $scope.paginationConf = {
+                currentPage: 1,
+                totalItems: 10,
+                itemsPerPage: 10,
+                perPageOptions: [10, 20, 30, 40, 50],
+                onChange: function () {
+                    console.log("paginationConf");
+                    $scope.reloadList();//重新加载
+                }
+            };
+
+            $scope.fsite = {};
+
+            //分页
+            $scope.find = function (page, rows) {
+                $http.post('http://localhost:8080/site/find?pageNum=' + page + '&pageSize=' + rows, $scope.fsite).success(
+                    function (response) {
+
+                        $scope.sites = response.rows;
+
+                        $scope.paginationConf.totalItems = response.total;//更新总记录数
+                    }
+                );
+            }
+
+
+
+            //读取所有的省
+            $scope.findAllProvinces = function () {
+
+                $http.get('http://localhost:8080/addr/findAllProvince').success(
+                    function (response) {
+                        $scope.provinceList = response;
+
+                    }
+                );
+
+
+            }
+
+
+            //读取所有的市
+            $scope.findAllCities = function () {
+
+                $http.get('http://localhost:8080/addr/findAllCities').success(
+                    function (response) {
+                        $scope.cityList = response;
+
+                    }
+                );
+
+            }
+
+            //读取所有的区
+            $scope.findAllAreas = function () {
+
+                $http.get('http://localhost:8080/addr/findAllAreas').success(
+                    function (response) {
+                        $scope.areaList = response;
+
+                    }
+                );
+
+            }
+
+
+            //读取省
+            $scope.findAllProvince = function () {
+
+                $http.get('http://localhost:8080/addr/findAllProvince').success(
+                    function (response) {
+                        $scope.provinces = response;
+
+                    }
+                );
+
+
+            }
+
+
+            //读取市
+            $scope.$watch('site.provinceId', function (newValue, oldValue) {
+                var provinceId = '110000';
+                for (var i in $scope.provinces) {
+
+                    if ($scope.provinces[i].id == newValue) {
+
+                        provinceId = $scope.provinces[i].provinceid;
+                    }
+                }
+                $.ajax({
+                    url : 'http://localhost:8080/addr/findCitiesByProvinceId?provinceId=' + provinceId,
+                    type : 'GET',
+                    dataType : 'json',
+                    async: false,
+                    success : function(data) {
+                        $scope.Cities = data;
+                    }
+                });
+                // $http.get('http://localhost:8080/addr/findCitiesByProvinceId?provinceId=' + provinceId).success(
+                //     function (response) {
+                //         $scope.Cities = response;
+                //         console.log("$scope.Cities1111");
+                //         console.log($scope.Cities);
+                //
+                //     }
+                // );
+
+            });
+
+            //读取县
+            $scope.$watch('site.cityId', function (newValue, oldValue) {
+
+                var cityId = '110000';
+                console.log("$scope.Cities");
+                console.log($scope.Cities);
+
+                for (var i in $scope.Cities) {
+
+                    if ($scope.Cities[i].id == newValue) {
+
+                        cityId = $scope.Cities[i].cityid;
+                    }
+                }
+
+                $http.get('http://localhost:8080/addr/findAreasByCityId?cityId=' + cityId).success(
+                    function (response) {
+                        $scope.Areas = response;
+
+                    }
+                );
+
+            });
+
+
+            $scope.add = function () {
+
+                $http.post('http://localhost:8080/site/add', $scope.site).success(
+                    function (response) {
+                        if (response.success) {
+                            $scope.reloadList();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                );
+
+
+
+            }
+
+
+            $scope.findById = function (id) {
+                $http.get('http://localhost:8080/site/findById?id=' + id).success(
+                    function (response) {
+
+                        $scope.site = response;
+
+                    },
+                );
+
+            }
+
+            $scope.update = function () {
+
+                $http.post('http://localhost:8080/site/update', $scope.site).success(
+                    function (response) {
+                        if (response.success) {
+                            $scope.reloadList();
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                );
+            }
+
+
+            $scope.save = function () {
+
+                if ($scope.site.id == null) {
+                    console.log(1111);
+                    $scope.add();
+                } else {
+                    console.log(2222);
+                    $scope.update();
+                }
+            }
+
+
+
+
+
+        });
+
+
+    </script>
+
+</head>
+<body class="hold-transition skin-red sidebar-mini" ng-app="yqRegister" ng-controller="siteController"
+      ng-init="findAllProvinces();findAllCities();findAllAreas();findAllProvince()">
+<!-- .box-body -->
+<div class="box-header with-border">
+    <h3 class="box-title">防疫站管理</h3>
+</div>
+
+<div class="box-body">
+
+    <!-- 数据表格 -->
+    <div class="table-box">
+
+        <!--工具栏-->
+        <div class="pull-left">
+            <div class="form-group form-inline">
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default" title="新建" data-toggle="modal"
+                            data-target="#editModal" ng-click="site={}"><i class="fa fa-file-o"></i> 新建
+                    </button>
+
+                    <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload();"><i
+                            class="fa fa-refresh"></i> 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="box-tools pull-right">
+            <div class="has-feedback">
+                防疫站名称:<input ng-model="fsite.name">
+                <button class="btn btn-default" ng-click="reloadList()">查询</button>
+            </div>
+        </div>
+        <!--工具栏/-->
+
+        <!--数据列表-->
+        <table id="dataList" class="table table-bordered table-striped table-hover dataTable">
+            <thead>
+            <tr>
+                <th class="" style="padding-right:0px">
+                    <input id="selall" type="checkbox" class="icheckbox_square-blue">
+                </th>
+                <th class="sorting_asc">防疫站ID</th>
+                <th class="sorting">防疫站名称</th>
+                <th class="sorting">防疫站地址</th>
+                <th class="sorting">表单提交地址</th>
+                <th class="text-center">操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="Site in sites">
+                <td><input type="checkbox"></td>
+                <td>{{Site.id}}</td>
+                <td>{{Site.name}}</td>
+                <td>{{provinceList[Site.provinceId-1].province+cityList[Site.cityId-1].city+areaList[Site.areaId-1].area+Site.detailed}}</td>
+                <td>{{"http://localhost:63343/yqRegister/register.html#?id="+Site.id}}</td>
+                <td class="text-center">
+                    <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#editModal"
+                            ng-click="findById(Site.id)">修改
+                    </button>
+                </td>
+            </tr>
+
+            </tbody>
+        </table>
+
+        <!--数据列表/-->
+        <tm-pagination conf="paginationConf"></tm-pagination>
+
+    </div>
+    <!-- 数据表格 /-->
+
+
+</div>
+<!-- /.box-body -->
+
+<!-- 编辑窗口 -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="myModalLabel">防疫站编辑</h3>
+            </div>
+            <div class="modal-body">
+                <table class="table table-bordered table-striped" width="800px">
+                    <tr>
+                        <td>防疫站名称</td>
+                        <td><input class="form-control" placeholder="防疫站名称" ng-model="site.name"></td>
+                    </tr>
+                    <tr>
+                        <td>防疫站地址</td>
+                        <td>
+                            <select class="form-control" ng-model="site.provinceId"
+                                    ng-options="item.id as item.province for item in provinces"></select>
+                        </td>
+                        <td>
+                            <select class="form-control" ng-model="site.cityId"
+                                    ng-options="item.id as item.city for item in Cities"></select>
+                        </td>
+                        <td>
+                            <select class="form-control" ng-model="site.areaId"
+                                    ng-options="item.id as item.area for item in Areas "></select>
+                        </td>
+
+
+                    </tr>
+                    <tr>
+                        <td>详细地址</td>
+                        <td><input class="form-control" placeholder="详细地址" ng-model="site.detailed"></td>
+                    </tr>
+
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" data-dismiss="modal" aria-hidden="true" ng-click="save()">保存</button>
+                <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

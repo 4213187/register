@@ -1,0 +1,137 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>疫情防控登记系统</title>
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="css/sm.css">
+    <link rel="stylesheet" href="css/sm-extend.css">
+    <link rel="stylesheet" href="css/demos.css">
+    <script src="./plugins/angularjs/angular.min.js"></script>
+    <script>
+
+      var app = angular.module('yqRegister', []);
+
+
+      app.controller('registerController', function ($scope, $http,$location) {
+        $scope.getSiteId = function () {
+          $scope.record={};
+          $scope.site={};
+          //判断链接是否正常
+          var id = $location.search()['id'];
+          if (id ==null || id ==0){
+            alert("非法访问，提交无效");
+            $scope.site.name="非法访问，提交无效";
+          }else {
+            $scope.findById(id);
+          }
+
+        }
+
+        $scope.findById = function (id) {
+          $http.get('http://localhost:8080/site/findById?id=' + id).success(
+                  function (response) {
+
+                    $scope.site = response;
+                    $scope.record.siteId = $scope.site.id;
+                  },
+          );
+
+        }
+
+        $scope.save = function () {
+          $http.post('http://localhost:8080/record/add' ,$scope.record).success(
+                  function (response) {
+                    alert(response.message);
+                  }
+          );
+
+        }
+
+
+      });
+
+
+    </script>
+
+
+  </head>
+  <body  ng-app="yqRegister" ng-controller="registerController" ng-init="getSiteId()">
+    <div class="page-group">
+        <div class="page page-current">
+        <header class="bar bar-nav">
+  <h1 class='title'>{{site.name}}</h1>
+</header>
+<div class="content">
+  <div class="list-block">
+    <ul>
+      <!-- Text inputs -->
+      <li>
+        <div class="item-content">
+          <div class="item-media"><i class="icon icon-form-name"></i></div>
+          <div class="item-inner">
+            <div class="item-title label">姓名:</div>
+            <div class="item-input">
+              <input type="text" placeholder="你的姓名" ng-model="record.username">
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="item-content">
+          <div class="item-media"><i class="icon icon-form-email"></i></div>
+          <div class="item-inner">
+            <div class="item-title label">手机:</div>
+            <div class="item-input">
+              <input type="text" placeholder="你的手机号" ng-model="record.phone">
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="item-content">
+          <div class="item-media"><i class="icon icon-form-email"></i></div>
+          <div class="item-inner">
+            <div class="item-title label">温度:</div>
+            <div class="item-input">
+              <input type="text" placeholder="你的温度" ng-model="record.temperature">
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="item-content">
+          <div class="item-media"><i class="icon icon-form-password"></i></div>
+          <div class="item-inner">
+            <div class="item-title label">方向:</div>
+            <div class="item-input">
+                <label><input type="radio" name="action" value="0" ng-model="record.action">出</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <label><input type="radio" name="action" value="1" ng-model="record.action">入</label>
+
+
+            </div>
+          </div>
+        </div>
+      </li>
+
+    </ul>
+  </div>
+  <div class="content-block" >
+    <div class="row" >
+      <div class="col-50" ><a   href="#" class="button button-big button-fill button-fill">取消</a></div>
+      <div class="col-50" ><a  href="#" class="button button-big button-fill button-success" ng-click="save()">提交</a></div>
+
+    </div>
+  </div>
+</div>
+        </div>
+    </div>
+
+
+
+  </body>
+</html>

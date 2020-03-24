@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=9; IE=8; IE=7; IE=EDGE">
+    <meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7"/>
+    <title>疫情防疫管理后台</title>
+    <!--	 <link rel="icon" href="../assets/img/favicon.ico">-->
+
+
+    <link rel="stylesheet" type="text/css" href="css/webbase.css"/>
+    <link rel="stylesheet" type="text/css" href="css/pages-login-manage.css"/>
+    <script src="./plugins/angularjs/angular.min.js"></script>
+    <script>
+
+        var app = angular.module('yqRegister', []);
+
+
+        app.controller('loginController', function ($scope, $http) {
+            $scope.admin={};
+            $scope.login = function () {
+
+                $http.post('http://localhost:8080/admin/login', $scope.admin,{'withCredentials':true}).success(
+                    function (response) {
+                        if (response.success) {
+
+                            location.href="admin/index.html"
+                        }else {
+                            alert(response.message);
+                        }
+                    }
+                );
+            }
+
+        });
+
+
+    </script>
+
+
+</head>
+
+<body ng-app="yqRegister" ng-controller="loginController">
+<div class="loginmanage">
+    <div class="py-container">
+        <h4 class="manage-title">疫情防疫管理后台</h4>
+        <div class="loginform">
+
+            <ul class="sui-nav nav-tabs tab-wraped">
+                <li>
+                    <a href="#index" data-toggle="tab">
+                        <h3>扫描登录</h3>
+                    </a>
+                </li>
+                <li class="active">
+                    <a href="#profile" data-toggle="tab">
+                        <h3>账户登录</h3>
+                    </a>
+                </li>
+            </ul>
+            <div class="tab-content tab-wraped">
+                <div id="index" class="tab-pane">
+                    <p>二维码登录，暂为官网二维码</p>
+                    <img src="../img/wx_cz.jpg"/>
+                </div>
+                <div id="profile" class="tab-pane  active">
+                    <form class="sui-form">
+                        <div class="input-prepend"><span class="add-on loginname"></span>
+                            <input id="prependedInput" type="text" placeholder="邮箱/用户名/手机号" class="span2 input-xfat"
+                                   ng-model="admin.username">
+                        </div>
+                        <div class="input-prepend"><span class="add-on loginpwd"></span>
+                            <input id="prependedInput2" type="password" placeholder="请输入密码" class="span2 input-xfat"
+                                   ng-model="admin.password">
+                        </div>
+
+                        <div class="logined">
+                            <a class="sui-btn btn-block btn-xlarge btn-danger" ng-click="login()" target="_blank">登&nbsp;&nbsp;录</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+</div>
+
+
+
+<div class="py-container copyright">
+    <ul>
+        <li>404资源网www.404zyw.com</li>
+        <li>404资源网www.404zyw.com</li>
+        <li>404资源网www.404zyw.com</li>
+
+    </ul>
+
+    <div class="beian">冀ICP备20003452号
+    </div>
+</div>
+
+
+<script type="text/javascript" src="js/plugins/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="js/plugins/sui/sui.min.js"></script>
+<script type="text/javascript" src="js/plugins/jquery-placeholder/jquery.placeholder.min.js"></script>
+<script src="js/pages/jquery.slideunlock.js"></script>
+
+</body>
+
+</html>
